@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Affordable Sundresses</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .filters select,
+    .filters input {
+      padding: 6px 10px;
+      margin: 0 5px;
+      font-size: 14px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-images {
+      position: relative;
+      width: 100%;
+      padding-top: 120%; /* aspect ratio */
+      overflow: hidden;
+    }
+
+    .product-images img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+    }
+
+    .product-images img.secondary {
+      opacity: 0;
+    }
+
+    .product-images:hover img.secondary {
+      opacity: 1;
+    }
+
+    .product-body {
+      padding: 10px 12px 12px;
+    }
+
+    .product-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      min-height: 36px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+    }
+
+    .product-price {
+      font-size: 15px;
+      color: #e91e63;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .product-link {
+      text-decoration: none;
+      font-size: 13px;
+      color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Affordable Blue & Pink Sundresses</h1>
+
+  <div class="filters">
+    <label>
+      Color:
+      <select id="colorFilter">
+        <option value="all">All</option>
+        <option value="blue">Blue</option>
+        <option value="pink">Pink</option>
+      </select>
+    </label>
+
+    <label>
+      Max price:
+      <input type="number" id="maxPrice" placeholder="e.g. 40" min="1" />
+    </label>
+
+    <button id="applyFilters">Apply</button>
+  </div>
+
+  <div class="product-grid" id="productGrid"></div>
+
+  <script>
+    // Hardcoded sample data – replace later with real API/scraped data
+    const products = [
+      {
+        id: 1,
+        title: "Blue Floral Ruffle Sundress",
+        color: "blue",
+        price: 29.99,
+        images: [
+          "https://via.placeholder.com/400x480/4a90e2/ffffff?text=Blue+Dress+1A",
+          "https://via.placeholder.com/400x480/4178c0/ffffff?text=Blue+Dress+1B"
+        ],
+        url: "#"
+      },
+      {
+        id: 2,
+        title: "Light Blue Linen Midi Sundress",
+        color: "blue",
+        price: 34.50,
+        images: [
+          "https://via.placeholder.com/400x480/5dade2/ffffff?text=Blue+Dress+2A",
+          "https://via.placeholder.com/400x480/2e86c1/ffffff?text=Blue+Dress+2B"
+        ],
+        url: "#"
+      },
+      {
+        id: 3,
+        title: "Pink Tiered Babydoll Sundress",
+        color: "pink",
+        price: 24.00,
+        images: [
+          "https://via.placeholder.com/400x480/f78fb3/ffffff?text=Pink+Dress+1A",
+          "https://via.placeholder.com/400x480/f06292/ffffff?text=Pink+Dress+1B"
+        ],
+        url: "#"
+      },
+      {
+        id: 4,
+        title: "Blush Pink Wrap Sundress",
+        color: "pink",
+        price: 39.95,
+        images: [
+          "https://via.placeholder.com/400x480/f8bbd0/ffffff?text=Pink+Dress+2A",
+          "https://via.placeholder.com/400x480/f48fb1/ffffff?text=Pink+Dress+2B"
+        ],
+        url: "#"
+      },
+      {
+        id: 5,
+        title: "Blue Smocked Mini Sundress",
+        color: "blue",
+        price: 18.75,
+        images: [
+          "https://via.placeholder.com/400x480/3498db/ffffff?text=Blue+Dress+3A",
+          "https://via.placeholder.com/400x480/2e86c1/ffffff?text=Blue+Dress+3B"
+        ],
+        url: "#"
+      }
+    ];
+
+    const productGrid = document.getElementById("productGrid");
+    const colorFilter = document.getElementById("colorFilter");
+    const maxPriceInput = document.getElementById("maxPrice");
+    const applyFiltersBtn = document.getElementById("applyFilters");
+
+    function renderProducts(list) {
+      productGrid.innerHTML = "";
+
+      list.forEach((product) => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "product-images";
+
+        const primaryImg = document.createElement("img");
+        primaryImg.src = product.images[0];
+        primaryImg.alt = product.title;
+
+        imgWrapper.appendChild(primaryImg);
+
+        if (product.images[1]) {
+          const secondaryImg = document.createElement("img");
+          secondaryImg.src = product.images[1];
+          secondaryImg.alt = product.title + " (alt view)";
+          secondaryImg.className = "secondary";
+          imgWrapper.appendChild(secondaryImg);
+        }
+
+        const body = document.createElement("div");
+        body.className = "product-body";
+
+        const title = document.createElement("div");
+        title.className = "product-title";
+        title.textContent = product.title;
+
+        const meta = document.createElement("div");
+        meta.className = "product-meta";
+        meta.textContent = product.color === "blue" ? "Blue sundress" : "Pink sundress";
+
+        const price = document.createElement("div");
+        price.className = "product-price";
+        price.textContent = `$${product.price.toFixed(2)}`;
+
+        const link = document.createElement("a");
+        link.className = "product-link";
+        link.href = product.url;
+        link.target = "_blank";
+        link.textContent = "View dress";
+
+        body.appendChild(title);
+        body.appendChild(meta);
+        body.appendChild(price);
+        body.appendChild(link);
+
+        card.appendChild(imgWrapper);
+        card.appendChild(body);
+
+        productGrid.appendChild(card);
+      });
+    }
+
+    function applyFilters() {
+      const selectedColor = colorFilter.value;
+      const maxPrice = parseFloat(maxPriceInput.value);
+
+      let filtered = products.slice();
+
+      if (selectedColor !== "all") {
+        filtered = filtered.filter((p) => p.color === selectedColor);
+      }
+
+      if (!isNaN(maxPrice)) {
+        filtered = filtered.filter((p) => p.price <= maxPrice);
+      }
+
+      renderProducts(filtered);
+    }
+
+    applyFiltersBtn.addEventListener("click", applyFilters);
+
+    // Initial render
+    renderProducts(products);
+  </script>
+</body>
+</html>
