@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Affordable Blue & Pink Sundresses</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #fff0f5; }
+
+    header {
+      background: linear-gradient(135deg, #f48fb1, #90caf9);
+      padding: 30px 20px;
+      text-align: center;
+      color: white;
+    }
+    header h1 { font-size: 2rem; margin-bottom: 6px; }
+    header p { font-size: 0.9rem; opacity: 0.9; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .controls input[type="text"] {
+      padding: 8px 14px;
+      border: 2px solid #f48fb1;
+      border-radius: 999px;
+      font-size: 14px;
+      outline: none;
+      width: 200px;
+    }
+
+    .controls button {
+      padding: 8px 20px;
+      border: 2px solid #f48fb1;
+      border-radius: 999px;
+      background: white;
+      color: #f48fb1;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .controls button.active, .controls button:hover {
+      background: #f48fb1; color: white;
+    }
+    .controls button.blue-btn { border-color: #90caf9; color: #90caf9; }
+    .controls button.blue-btn.active, .controls button.blue-btn:hover {
+      background: #90caf9; color: white;
+    }
+
+    .controls label {
+      font-size: 14px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .controls input[type="range"] { accent-color: #f48fb1; width: 130px; }
+    #priceLabel { font-weight: bold; color: #e91e63; min-width: 40px; }
+
+    select {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 999px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #count {
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+
+    .card img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+    }
+
+    .card-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+    }
+
+    .card-title { font-size: 13px; font-weight: 600; color: #333; line-height: 1.4; }
+    .card-store { font-size: 11px; color: #aaa; }
+    .card-price { font-size: 18px; font-weight: bold; color: #e91e63; }
+    .color-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: white;
+      width: fit-content;
+    }
+
+    .card-link {
+      margin-top: auto;
+      display: block;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f48fb1, #90caf9);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .card-link:hover { opacity: 0.85; }
+
+    #noResults {
+      text-align: center;
+      padding: 60px;
+      color: #aaa;
+      font-size: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Affordable Blue & Pink Sundresses</h1>
+  <p>Real dresses from Google Shopping — all under $60</p>
+</header>
+
+<div class="controls">
+  <input type="text" id="searchBox" placeholder="Search dresses..." oninput="render()"/>
+  <button class="active" onclick="setColor('all', this)">All</button>
+  <button class="blue-btn" onclick="setColor('blue', this)">Blue</button>
+  <button onclick="setColor('pink', this)">Pink</button>
+  abel>
+    Max: <span id="priceLabel">$60</span>
+    <input type="range" id="priceRange" min="10" max="60" value="60" oninput="setPrice(this.value)"/>
+  </label>
+  <select id="sortBy" onchange="render()">
+    <option value="asc">Price: Low to High</option>
+    <option value="desc">Price: High to Low</option>
+  </select>
+</div>
+
+<div id="count"></div>
+<div class="grid" id="grid"></div>
+<div id="noResults">No dresses found. Try adjusting filters.</div>
+
+<script>
+  let allProducts = [];
+  let activeColor = "all";
+  let maxPrice = 60;
+
+  fetch("products.json")
+    .then(r => r.json())
+    .then(data => { allProducts = data; render(); })
+    .catch(() => {
+      document.getElementById("noResults").style.display = "block";
+      document.getElementById("noResults").textContent = "Could not load products.json";
+    });
+
+  function setColor(color, btn) {
+    activeColor = color;
+    document.querySelectorAll(".controls button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render();
+  }
+
+  function setPrice(val) {
+    maxPrice = parseFloat(val);
+    document.getElementById("priceLabel").textContent = `$${val}`;
+    render();
+  }
+
+  function render() {
+    const grid = document.getElementById("grid");
+    const noResults = document.getElementById("noResults");
+    const count = document.getElementById("count");
+    const search = document.getElementById("searchBox").value.toLowerCase();
+    const sort = document.getElementById("sortBy").value;
+
+    let filtered = allProducts.filter(p => p.priceNum <= maxPrice);
+    if (activeColor !== "all") filtered = filtered.filter(p => p.color === activeColor);
+    if (search) filtered = filtered.filter(p => p.title.toLowerCase().includes(search));
+    filtered.sort((a, b) => sort === "asc" ? a.priceNum - b.priceNum : b.priceNum - a.priceNum);
+
+    grid.innerHTML = "";
+
+    if (!filtered.length) {
+      noResults.style.display = "block";
+      count.textContent = "";
+      return;
+    }
+
+    noResults.style.display = "none";
+    count.textContent = `Showing ${filtered.length} dresses`;
+
+    filtered.forEach(p => {
+      const badgeColor = p.color === "blue" ? "#90caf9" : "#f48fb1";
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.title}" loading="lazy"
+          onerror="this.src='https://via.placeholder.com/400x260/f8bbd0/ffffff?text=No+Image'"/>
+        <div class="card-body">
+          <span class="color-badge" style="background:${badgeColor}">${p.color}</span>
+          <div class="card-title">${p.title}</div>
+          <div class="card-store">${p.store || ""}</div>
+          <div class="card-price">${p.price}</div>
+          <a class="card-link" href="${p.link}" target="_blank">Shop Now</a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+</script>
+</body>
+</html>
